@@ -1,11 +1,15 @@
-# Sử dụng JDK để build
-FROM gradle:7.6.0-jdk17 AS builder
+# --- Build stage ---
+FROM gradle:8.4.0-jdk17 AS builder
 WORKDIR /app
 COPY . .
 RUN gradle clean build -x test
 
-# Chạy ứng dụng
+# --- Run stage ---
 FROM openjdk:17-jdk-slim
 WORKDIR /app
-COPY --from=builder /app/build/libs/*.jar app.jar
+
+# Chỉ copy đúng file jar đã build (loại bỏ *-plain.jar)
+COPY --from=builder /app/build/libs/*-SNAPSHOT.jar app.jar
+
+EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
