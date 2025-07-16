@@ -1,11 +1,11 @@
-# Sử dụng JDK 17
-FROM eclipse-temurin:17-jdk-alpine
-
-# Đặt thư mục làm việc
+# Sử dụng JDK để build
+FROM gradle:7.6.0-jdk17 AS builder
 WORKDIR /app
-
-# Copy file jar đã build
-COPY build/libs/*.jar app.jar
+COPY . .
+RUN gradle clean build -x test
 
 # Chạy ứng dụng
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+COPY --from=builder /app/build/libs/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]
